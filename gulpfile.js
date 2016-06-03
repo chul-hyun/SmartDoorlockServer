@@ -44,7 +44,7 @@ gulp.task('clean', function () {
     return gulp.src(distDir, {read: false}).pipe(clean());
 });
 
-gulp.task('default', ['build']);
+gulp.task('default', ['server_start']);
 
 gulp.task('watch', ['default'], function(){
     gulp.watch(`${srcDir}/**/*`, ['default']);

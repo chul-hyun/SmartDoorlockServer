@@ -1,20 +1,39 @@
 import {
     initRSA,
     decodeString
-} from "../util/rsa";
+} from '../util/rsa';
+
 import {
     checkDoorlockKey,
-    addUser
-} from "../util/db";
-import express from "express";
+    registUser,
+    login,
+    doorlockInfo,
+    setGCMRegistrationId
+} from '../util/db';
 
-var router = express.Router();
+import {
+    sendData
+} from '../util/tcp'
 
-var rsaInfo = initRSA();
+import express from 'express';
+
+let router = express.Router();
+
+let rsaInfo = initRSA();
+
+let interval = 1000 * 10;
 
 setInterval(()=>{
     rsaInfo = initRSA();
-}, 1000 * 10 )
+}, interval )
+
+router.post('/get', function (req, res) {
+    res.json({
+        state: 'rsaInfo',
+        rsaInfo: getPublishRSAInfo()
+    });
+    res.end();
+});
 
 // middleware that is specific to this router
 router.use(function (req, res, next) {
@@ -23,16 +42,16 @@ router.use(function (req, res, next) {
     try{
         if( req.body.rsaInfo.N != rsaInfo.N || req.body.rsaInfo.e != rsaInfo.e ){
             res.json({
-                state: 'rsa changed',
-                rsaInfo
+                state: 'rsaInfo',
+                rsaInfo: getPublishRSAInfo()
             });
             res.end();
             return;
         }
     }catch(e){
         res.json({
-            state: 'rsa changed',
-            rsaInfo
+            state: 'rsaInfo',
+            rsaInfo: getPublishRSAInfo()
         });
         res.end();
         return;
@@ -43,41 +62,123 @@ router.use(function (req, res, next) {
     next();
 });
 
-router.post('/regist', function (req, res) {
-    let { name, doorlockID, doorlockKey } = req.body.data;
-    console.log({ name, doorlockID, doorlockKey });
-
-    (async function(){
+router.post('/login', function (req, res) {
+    (async function(){ //@TODO async 를 위 function (req, res) 함수랑 합쳐보기
         try{
-            await checkDoorlockKey(doorlockID, doorlockKey);
-
-            let { password, registDate } = await addUser(doorlockID, name);
+            let loginInfo = req.body.data;
+            let user      = await login(loginInfo);
 
             console.log({
-                result : 'success',
-                userInfo : {
-                    name, registDate,
-                    key: password
-                }
+                result : true,
+                user
             });
 
             res.json({
-                result : 'success',
-                userInfo : {
-                    name, registDate,
-                    key: password
-                }
+                result : true,
+                user
             });
             res.end();
 
         } catch(error) {
             // Handle error
+            res.json({
+                result : false
+            });
             res.end();
-            console.error('4');
             console.error(error);
         }
     })();
 });
 
+router.post('/regist', function (req, res) {
+    let { name, doorlockId, doorlockKey } = req.body.data;
+    console.log({ name, doorlockId, doorlockKey });
+
+    (async function(){
+        try{
+            await checkDoorlockKey({ id: doorlockId, secretKey: doorlockKey });
+
+            console.log('registUser start')
+            let user = await registUser({ doorlockId, name });
+            console.log('registUser end')
+
+            console.log({
+                result : true,
+                user
+            });
+
+            res.json({
+                result : true,
+                user
+            });
+            res.end();
+
+        } catch(error) {
+            // Handle error
+            res.json({
+                result : false
+            });
+            res.end();
+            console.error(error);
+        }
+    })();
+});
+
+router.post('/unlock', function (req, res) {
+    (async function(){ //@TODO async 를 위 function (req, res) 함수랑 합쳐보기
+        try{
+            let loginInfo = req.body.data;
+            let user      = await login(loginInfo);
+            let doorlock  = await doorlockInfo(user.doorlockId);
+
+            sendData('dooropen');
+
+            res.json({
+                result : true
+            });
+            res.end();
+
+        } catch(error) {
+            // Handle error
+            res.json({
+                result : false
+            });
+            res.end();
+            console.error(error);
+        }
+    })();
+});
+
+router.post('/setGCMRegistrationId', function (req, res) {
+    (async function(){ //@TODO async 를 위 function (req, res) 함수랑 합쳐보기
+        try{
+            let {loginInfo, GCMRegistrationId} = req.body.data;
+
+            let user      = await login(loginInfo);
+            await setGCMRegistrationId({userId:user.id, GCMRegistrationId});
+
+            res.json({
+                result : true
+            });
+            res.end();
+
+        } catch(error) {
+            // Handle error
+            res.json({
+                result : false
+            });
+            res.end();
+            console.error(error);
+        }
+    })();
+});
+
+function getPublishRSAInfo(){
+    return {
+        N : rsaInfo.N,
+        e : rsaInfo.e,
+        interval
+    }
+}
 
 export default router;

@@ -12,6 +12,8 @@ var _route = require('./route');
 
 var _route2 = _interopRequireDefault(_route);
 
+var _tcp = require('./util/tcp');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var app = (0, _express2.default)();
@@ -26,5 +28,9 @@ app.get('/', function (req, res) {
 });
 
 app.listen(3000, function () {
-  console.log('Example app listening on port 3000!');
+  console.log('http server listening on port 3000!');
+});
+
+(0, _tcp.serverStart)(9393, function () {
+  console.log('tcp server listening on port 9393!');
 });
