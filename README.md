@@ -46,7 +46,8 @@ Smart Doorlock Middle Server
             <td></td>
 </tr>
         </tbody></table>
-<h3>인덱스</h3><div class="no_indexes_defined hide"><div class="notice"><img src="themes/dot.gif" title="" alt="" class="icon ic_s_notice"> 인덱스가 설정되지 않았습니다!</div></div><table id="table_index"><thead><tr><th>키 이름</th><th>종류</th><th>고유값</th><th>압축됨</th><th>컬럼명</th><th>관계성</th><th>데이터정렬방식</th><th>Null</th><th>설명</th></tr></thead><tbody><tr class="noclick odd"><td rowspan="1">PRIMARY</td><td rowspan="1">BTREE</td><td rowspan="1">예</td><td rowspan="1">아니오</td><td>id</td><td>1</td><td>A</td><td>아니오</td><td rowspan="1"></td></tr></tbody></table></div>
+<h3>인덱스</h3>
+<table id="table_index"><thead><tr><th>키 이름</th><th>종류</th><th>고유값</th><th>압축됨</th><th>컬럼명</th><th>관계성</th><th>데이터정렬방식</th><th>Null</th><th>설명</th></tr></thead><tbody><tr class="noclick odd"><td rowspan="1">PRIMARY</td><td rowspan="1">BTREE</td><td rowspan="1">예</td><td rowspan="1">아니오</td><td>id</td><td>1</td><td>A</td><td>아니오</td><td rowspan="1"></td></tr></tbody></table></div>
     <div>
 <h2>history</h2>
 
@@ -90,7 +91,8 @@ Smart Doorlock Middle Server
             <td></td>
 </tr>
         </tbody></table>
-<h3>인덱스</h3><div class="no_indexes_defined hide"><div class="notice"><img src="themes/dot.gif" title="" alt="" class="icon ic_s_notice"> 인덱스가 설정되지 않았습니다!</div></div><table id="table_index"><thead><tr><th>키 이름</th><th>종류</th><th>고유값</th><th>압축됨</th><th>컬럼명</th><th>관계성</th><th>데이터정렬방식</th><th>Null</th><th>설명</th></tr></thead><tbody><tr class="noclick odd"><td rowspan="1">PRIMARY</td><td rowspan="1">BTREE</td><td rowspan="1">예</td><td rowspan="1">아니오</td><td>id</td><td>0</td><td>A</td><td>아니오</td><td rowspan="1"></td></tr><tr class="noclick even"><td rowspan="1">user_id</td><td rowspan="1">BTREE</td><td rowspan="1">아니오</td><td rowspan="1">아니오</td><td>userId</td><td>0</td><td>A</td><td>아니오</td><td rowspan="1"></td></tr></tbody></table></div>
+<h3>인덱스</h3>
+<table id="table_index"><thead><tr><th>키 이름</th><th>종류</th><th>고유값</th><th>압축됨</th><th>컬럼명</th><th>관계성</th><th>데이터정렬방식</th><th>Null</th><th>설명</th></tr></thead><tbody><tr class="noclick odd"><td rowspan="1">PRIMARY</td><td rowspan="1">BTREE</td><td rowspan="1">예</td><td rowspan="1">아니오</td><td>id</td><td>0</td><td>A</td><td>아니오</td><td rowspan="1"></td></tr><tr class="noclick even"><td rowspan="1">user_id</td><td rowspan="1">BTREE</td><td rowspan="1">아니오</td><td rowspan="1">아니오</td><td>userId</td><td>0</td><td>A</td><td>아니오</td><td rowspan="1"></td></tr></tbody></table></div>
     <div>
 <h2>setting</h2>
 
@@ -134,7 +136,8 @@ Smart Doorlock Middle Server
             <td></td>
 </tr>
         </tbody></table>
-<h3>인덱스</h3><div class="no_indexes_defined hide"><div class="notice"><img src="themes/dot.gif" title="" alt="" class="icon ic_s_notice"> 인덱스가 설정되지 않았습니다!</div></div><table id="table_index"><thead><tr><th>키 이름</th><th>종류</th><th>고유값</th><th>압축됨</th><th>컬럼명</th><th>관계성</th><th>데이터정렬방식</th><th>Null</th><th>설명</th></tr></thead><tbody><tr class="noclick odd"><td rowspan="1">PRIMARY</td><td rowspan="1">BTREE</td><td rowspan="1">예</td><td rowspan="1">아니오</td><td>userId</td><td>0</td><td>A</td><td>아니오</td><td rowspan="1"></td></tr></tbody></table></div>
+<h3>인덱스</h3>
+<table id="table_index"><thead><tr><th>키 이름</th><th>종류</th><th>고유값</th><th>압축됨</th><th>컬럼명</th><th>관계성</th><th>데이터정렬방식</th><th>Null</th><th>설명</th></tr></thead><tbody><tr class="noclick odd"><td rowspan="1">PRIMARY</td><td rowspan="1">BTREE</td><td rowspan="1">예</td><td rowspan="1">아니오</td><td>userId</td><td>0</td><td>A</td><td>아니오</td><td rowspan="1"></td></tr></tbody></table></div>
     <div>
 <h2>user</h2>
 
@@ -194,5 +197,6 @@ Smart Doorlock Middle Server
             <td></td>
 </tr>
         </tbody></table>
-<h3>인덱스</h3><div class="no_indexes_defined hide"><div class="notice"><img src="themes/dot.gif" title="" alt="" class="icon ic_s_notice"> 인덱스가 설정되지 않았습니다!</div></div><table id="table_index"><thead><tr><th>키 이름</th><th>종류</th><th>고유값</th><th>압축됨</th><th>컬럼명</th><th>관계성</th><th>데이터정렬방식</th><th>Null</th><th>설명</th></tr></thead><tbody><tr class="noclick odd"><td rowspan="1">PRIMARY</td><td rowspan="1">BTREE</td><td rowspan="1">예</td><td rowspan="1">아니오</td><td>id</td><td>10</td><td>A</td><td>아니오</td><td rowspan="1"></td></tr><tr class="noclick even"><td rowspan="1">doorlock_id</td><td rowspan="1">BTREE</td><td rowspan="1">아니오</td><td rowspan="1">아니오</td><td>doorlockId</td><td>10</td><td>A</td><td>아니오</td><td rowspan="1"></td></tr></tbody></table></div>
+<h3>인덱스</h3>
+<table id="table_index"><thead><tr><th>키 이름</th><th>종류</th><th>고유값</th><th>압축됨</th><th>컬럼명</th><th>관계성</th><th>데이터정렬방식</th><th>Null</th><th>설명</th></tr></thead><tbody><tr class="noclick odd"><td rowspan="1">PRIMARY</td><td rowspan="1">BTREE</td><td rowspan="1">예</td><td rowspan="1">아니오</td><td>id</td><td>10</td><td>A</td><td>아니오</td><td rowspan="1"></td></tr><tr class="noclick even"><td rowspan="1">doorlock_id</td><td rowspan="1">BTREE</td><td rowspan="1">아니오</td><td rowspan="1">아니오</td><td>doorlockId</td><td>10</td><td>A</td><td>아니오</td><td rowspan="1"></td></tr></tbody></table></div>
     <p class="print_ignore"><input type="button" class="button" id="print" value="인쇄"></p></div>
