@@ -47,7 +47,7 @@ router.post('/unlock', async function (req, res) {
 });
 
 router.post('/setGCMRegistrationId', async function (req, res) {
-    let {GCMRegistrationId} = req.body;
+    let {GCMRegistrationId} = req.body.data;
 
     await db.setGCMRegistrationId({userId:user.id, GCMRegistrationId});
 
