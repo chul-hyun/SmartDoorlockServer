@@ -1,119 +1,72 @@
-import mysql from 'mysql';
-import Q from 'q';
+import execCacheQuery from './execCacheQuery';
 
-let pool  = mysql.createPool({
-    host     : 'localhost',
-    user     : 'root',
-    password : 'wkdTlqkf',
-    database : 'doorlock'
-});
+export async function login(loginInfo){
+    let columns = ['id', 'name', 'password', 'registDate', 'latestAuthDate', 'doorlockId'];
+    let query = `SELECT ${arrayToSelectQuery(columns)} FROM ${tableNameQuery('user')} ${objectToWhereQuery(loginInfo)}`;
 
-function execQuery(query){
-    let def = Q.defer();
+    let { rows } = await execCacheQuery(query);
+    if (rows.length !== 1){
+        return {result: false, user: null};
+    }
 
-    console.log(query);
-
-    pool.query(query, function(err, rows, fields) {
-        if(err){
-            console.log('execQuery Error')
-            def.reject(err);
-        }
-        console.log('execQuery');
-        def.resolve({ rows, fields });
-    })
-
-    return def.promise;
+    return {result: false, user: rows[0]};
 }
 
-export function login(loginInfo){
-    let def = Q.defer();;
+export async function checkDoorlockKey(doorlockInfo){
+    let query = `SELECT \`id\` FROM ${tableNameQuery('doorlock')} ${objectToWhereQuery(doorlockInfo)}`;
+    let { rows } = await execCacheQuery(query);
+    if (rows.length !== 1){
+        return false;
+    }
 
-    (async function(){
-        let columns = ['id', 'name', 'password', 'registDate', 'latestAuthDate', 'doorlockId'];
-        let query = `SELECT ${arrayToSelectQuery(columns)} FROM \`user\` ${objectToWhereQuery(loginInfo)}`;
-
-        let { rows } = await execQuery(query);
-        if (rows.length === 1){
-            def.resolve(rows[0]);
-        }else{
-            def.reject('login fail'); // @TODO ERROR LIST를 상수로 선언해서 이용.
-        }
-    })();
-
-    return def.promise;
+    return true;
 }
 
-export function checkDoorlockKey(doorlockInfo){
-    let def = Q.defer();
+export async function registUser(registInfo){
+    registInfo.id             = null;
+    registInfo.password       = makeRandomString(20);
+    registInfo.registDate     = Math.floor((+new Date())/1000);
+    registInfo.latestAuthDate = registInfo.registDate;
 
-    (async function(){
-        let query = `SELECT \`id\` FROM \`doorlock\` ${objectToWhereQuery(doorlockInfo)}`;
-        let { rows } = await execQuery(query);
-        console.log('checkDoorlockKey');
-        if (rows.length === 1){
-            def.resolve();
-        }else{
-            def.reject('no match doorlock key'); // @TODO ERROR LIST를 상수로 선언해서 이용.
-        }
-    })();
+    let query = `INSERT INTO ${tableNameQuery('user')} ${objectToInsertQuery(registInfo)}`;
 
-    return def.promise;
-}
+    let { rows } = await execCacheQuery(query);
 
-export function registUser(registInfo){
-    console.log('registUser');
-    let def = Q.defer();;
+    registInfo.id = rows.insertId;
 
-    (async function(){
-        console.log('async registUser');
-        registInfo.id             = null;
-        console.log('1');
-        registInfo.password       = makeRandomString(20);
-        console.log('2');
-        registInfo.registDate     = Math.floor((+new Date())/1000);
-        console.log('3');
-        registInfo.latestAuthDate = registInfo.registDate;
-        console.log('4');
-
-        console.log(registInfo);
-        let query = `INSERT INTO \`doorlock\`.\`user\` ${objectToInsertQuery(registInfo)}`;
-        console.log(query);
-
-        let { rows } = await execQuery(query);
-
-        registInfo.id = rows.insertId;
-
-        def.resolve(registInfo);
-    })();
-
-    return def.promise;
+    return registInfo;
 }
 
 export function doorlockInfo(){
     return Q();
 }
 
-export function setGCMRegistrationId(GCMInfo){
-    let def = Q.defer();
+export async function setGCMRegistrationId(GCMInfo){
+    let query = `SELECT * FROM  ${tableNameQuery('gcm')} ${objectToWhereQuery({userId: GCMInfo.userId})}`;
+    let { rows } = await execCacheQuery(query);
 
-    (async function(){
-        let query = `SELECT * FROM  \`gcm\` ${objectToWhereQuery({userId: GCMInfo.userId})}`;
-        let { rows } = await execQuery(query);
+    if (rows.length >= 1){
+        //UPDATE
+        query = `UPDATE ${tableNameQuery('gcm')} ${objectToUpdateQuery(GCMInfo)} ${objectToWhereQuery({userId: GCMInfo.userId})}`;
+    }else{
+        //INSERT
+        query = `INSERT INTO  ${tableNameQuery('gcm')} ${objectToInsertQuery(GCMInfo)}`;
+    }
 
-        if (rows.length >= 1){
-            //UPDATE
-            query = `UPDATE \`doorlock\`.\`gcm\` ${objectToUpdateQuery(GCMInfo)} ${objectToWhereQuery({userId: GCMInfo.userId})}`;
-        }else{
-            //INSERT
-            query = `INSERT INTO  \`doorlock\`.\`gcm\` ${objectToInsertQuery(GCMInfo)}`;
-        }
+    return await execCacheQuery(query);
+}
 
-        await execQuery(query);
+export async function saveHistory({userId, state, authtime}){
+    let query = `INSERT INTO  ${tableNameQuery('history')} ${objectToInsertQuery({userId, state, authtime, id:null})}`;
+    return await execCacheQuery(query);
+}
 
-        def.resolve();
-    })();
+export async function updateLatestAuthDate({userId, authtime}){
+    //@TODO 구현
+}
 
-    return def.promise;
+export async function getDoorlockIdOfGCMRegistrationId(doorlockId){
+    //@TODO 구현
 }
 
 function makeRandomString(size){
@@ -173,4 +126,8 @@ function objectToUpdateQuery(obj){
 
 function arrayToSelectQuery(arr){
     return arr.map((val)=> `\`${val}\``).join(', ');
+}
+
+function tableNameQuery(tableName){
+    return `\`doorlock\`.\`${tableName}\``;
 }

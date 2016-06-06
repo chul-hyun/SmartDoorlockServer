@@ -13,7 +13,7 @@ app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x
 route(app);
 
 app.get('/', (req, res)=> {
-  res.send('cc+');
+  res.send('Smart Doorlock');
 });
 
 app.listen(3000, ()=> {

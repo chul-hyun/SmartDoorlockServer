@@ -12,26 +12,36 @@ var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
 
 var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
 
-var _rsa = require('../util/rsa');
-
-var _db = require('../util/db');
-
-var _tcp = require('../util/tcp');
-
 var _express = require('express');
 
 var _express2 = _interopRequireDefault(_express);
 
+var _rsa = require('../util/rsa');
+
+var rsa = _interopRequireWildcard(_rsa);
+
+var _db = require('../util/db');
+
+var db = _interopRequireWildcard(_db);
+
+var _tcp = require('../util/tcp');
+
+var tcp = _interopRequireWildcard(_tcp);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+//import * as gcm from '../util/gcm'
 
 var router = _express2.default.Router();
 
-var rsaInfo = (0, _rsa.initRSA)();
+var rsaInfo = rsa.initRSA();
 
 var interval = 1000 * 10;
 
 setInterval(function () {
-    rsaInfo = (0, _rsa.initRSA)();
+    rsaInfo = rsa.initRSA();
 }, interval);
 
 router.post('/get', function (req, res) {
@@ -68,7 +78,7 @@ router.use(function (req, res, next) {
         return;
     }
 
-    req.body.data = JSON.parse((0, _rsa.decodeString)(screetData, rsaInfo.d, rsaInfo.N));
+    req.body.data = JSON.parse(rsa.decodeString(screetData, rsaInfo.d, rsaInfo.N));
 
     next();
 });
@@ -83,7 +93,7 @@ router.post('/login', function (req, res) {
                         _context.prev = 0;
                         loginInfo = req.body.data;
                         _context.next = 4;
-                        return (0, _db.login)(loginInfo);
+                        return db.login(loginInfo);
 
                     case 4:
                         user = _context.sent;
@@ -139,13 +149,13 @@ router.post('/regist', function (req, res) {
                     case 0:
                         _context2.prev = 0;
                         _context2.next = 3;
-                        return (0, _db.checkDoorlockKey)({ id: doorlockId, secretKey: doorlockKey });
+                        return db.checkDoorlockKey({ id: doorlockId, secretKey: doorlockKey });
 
                     case 3:
 
                         console.log('registUser start');
                         _context2.next = 6;
-                        return (0, _db.registUser)({ doorlockId: doorlockId, name: name });
+                        return db.registUser({ doorlockId: doorlockId, name: name });
 
                     case 6:
                         user = _context2.sent;
@@ -186,56 +196,69 @@ router.post('/regist', function (req, res) {
     }))();
 });
 
-router.post('/unlock', function (req, res) {
-    (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee3() {
-        var loginInfo, user, doorlock;
+router.post('/unlock', function () {
+    var ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee3(req, res) {
+        var loginInfo, user;
         return _regenerator2.default.wrap(function _callee3$(_context3) {
             while (1) {
                 switch (_context3.prev = _context3.next) {
                     case 0:
-                        _context3.prev = 0;
                         loginInfo = req.body.data;
-                        _context3.next = 4;
-                        return (0, _db.login)(loginInfo);
+                        user = void 0;
+                        _context3.prev = 2;
+                        _context3.next = 5;
+                        return db.login(loginInfo);
 
-                    case 4:
+                    case 5:
                         user = _context3.sent;
-                        _context3.next = 7;
-                        return (0, _db.doorlockInfo)(user.doorlockId);
 
-                    case 7:
-                        doorlock = _context3.sent;
-
-
-                        (0, _tcp.sendData)('dooropen');
-
-                        res.json({
-                            result: true
-                        });
-                        res.end();
-
-                        _context3.next = 18;
+                        tcp.sendData('dooropen');
+                        _context3.next = 16;
                         break;
 
-                    case 13:
-                        _context3.prev = 13;
-                        _context3.t0 = _context3['catch'](0);
+                    case 9:
+                        _context3.prev = 9;
+                        _context3.t0 = _context3['catch'](2);
 
                         // Handle error
                         res.json({
                             result: false
                         });
                         res.end();
+
+                        _context3.next = 15;
+                        return db.saveHistory({ userId: null, state: 'fail' });
+
+                    case 15:
+
+                        //@TODO user.doorlockId 를 가진 user의 GCMRegistrationId로 send GCM
+
                         console.error(_context3.t0);
 
+                    case 16:
+                        _context3.next = 18;
+                        return db.saveHistory({ userId: user.id, state: 'success' });
+
                     case 18:
+
+                        res.json({
+                            result: true
+                        });
+                        res.end();
+
+                        //@TODO user.doorlockId 를 가진 user의 GCMRegistrationId로 send GCM
+
+                    case 20:
                     case 'end':
                         return _context3.stop();
                 }
             }
-        }, _callee3, this, [[0, 13]]);
-    }))();
-});
+        }, _callee3, this, [[2, 9]]);
+    }));
+    return function (_x, _x2) {
+        return ref.apply(this, arguments);
+    };
+}());
 
 router.post('/setGCMRegistrationId', function (req, res) {
     (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee4() {
@@ -251,12 +274,12 @@ router.post('/setGCMRegistrationId', function (req, res) {
                         loginInfo = _req$body$data2.loginInfo;
                         GCMRegistrationId = _req$body$data2.GCMRegistrationId;
                         _context4.next = 6;
-                        return (0, _db.login)(loginInfo);
+                        return db.login(loginInfo);
 
                     case 6:
                         user = _context4.sent;
                         _context4.next = 9;
-                        return (0, _db.setGCMRegistrationId)({ userId: user.id, GCMRegistrationId: GCMRegistrationId });
+                        return db.setGCMRegistrationId({ userId: user.id, GCMRegistrationId: GCMRegistrationId });
 
                     case 9:
 

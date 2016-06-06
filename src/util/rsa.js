@@ -4,7 +4,6 @@ import _ from "lodash";
 
 let getPromise = (function(){
     let promiseNumberList       = getPromiseList(10000);
-    //promiseNumberList = promiseNumberList.slice(-3, -1);
     let promiseNumberListLength = promiseNumberList.length;
 
     return function(){
@@ -27,25 +26,25 @@ function getPromiseList(n){
     let result = [];
     sieve.forEach((check, index, arr)=>((check) && result.push(index)));
 
-    return result.filter(n => n >= 32); // N을 1000이상 값으로 설정하기 위함.
+    return result.filter(n => n >= 32); // N을 1000이상 값으로 설정하기 위함. (32 * 33 > 1000)
 }
 
-function gcd(a, b) {
+let gcd = _.memoize(function gcd(a, b) {
     return !!b ? gcd(b, a % b) : a;
-};
+});
 
-function mod(x, m){
+let mod = _.memoize(function mod(x, m){
     return x%m;
-}
+});
 
-function powMod(x, p, m){
+let powMod = _.memoize(function powMod(x, p, m){
     let binary = (p).toString(2).split('').reverse().map((v, i) => (v == '1') ? i : -1);
     let binaryModList = getPowModBinaryList(binary.length, x, m);
     binary = binary.filter(v => v >= 0).map(v => binaryModList[v]);
     return binary.reduce((result, val) => mod(result * val, m), 1);
-}
+});
 
-function getPowModBinaryList(max, num, m){
+let getPowModBinaryList = _.memoize(function getPowModBinaryList(max, num, m){
     let binary = _.fill(Array(max - 1), true);
     let result = [num];
     binary.reduce(pre => {
@@ -54,7 +53,7 @@ function getPowModBinaryList(max, num, m){
       return val;
     }, num)
     return result;
-}
+});
 
 function getRelativelyPrime(num){
     while(true){
@@ -65,7 +64,7 @@ function getRelativelyPrime(num){
     }
 }
 
-function extendedEuclid(r1, r2){
+let extendedEuclid = _.memoize(function extendedEuclid(r1, r2){
     if(r2 > r1){
         let tmp = r1;
         r1 = r2;
@@ -95,7 +94,7 @@ function extendedEuclid(r1, r2){
         t1 += tmp;
     }
     return t1;
-}
+});
 
 export function initRSA(){
     let p = getPromise();
@@ -117,53 +116,43 @@ export function initRSA(){
     }
 }
 
-function incodeRSA(e, d, num){
-    let code = powMod(num, e, N);
-
-    return {
-        N, e, d, code
-    }
-}
-
 function decodeRSA(code, d, N){
-    return powMod(code, d, N);
+    return new Promise((resolve)=>{
+        resolve(powMod(code, d, N));
+    })
 }
 
-export function decodeString(screet, d, N){
-    let decodVal = [];
-    screet.forEach((code) => {
-        let val = powMod(code, d, N);
-        decodVal.push(val);
+export let decodeJSON = _.memoize(function decodeJSON(screetList, d, N){
+    let promiseList = [];
+    screetList.forEach((code) => promiseList.push(decodeRSA(code, d, N)));
+
+    let strings = [];
+    Promise.all(promiseList).then((decodValList)=>{
+        decodValList.forEach((val, index) => {
+            if(index % 2 == 0){
+                 strings.push(String.fromCharCode(parseInt([zeroFill(val, 3), zeroFill(decodValList[index + 1], 3)].join('')) - 3));
+            }
+        })
     })
 
-    let unicodes = [];
+    try{
+        return JSON.parse(strings.join('')).data;
+    }catch(e){
+        return null;
+    }
 
-    decodVal.forEach((val, index) => {
-        let len = unicodes.length;
-        if(index % 2 == 0){
-            unicodes.push(parseInt(zeroFill(val, 3) + '' + zeroFill(decodVal[index + 1], 3)) - 3);
-        }
-    })
-
-    let strings = '';
-
-    unicodes.forEach(unicode => {
-        strings += String.fromCharCode(unicode);
-    })
-
-    return strings;
-}
+});
 
 // 문자를 유니코드로 변경.
 // 3글자씩 자른다.
 // 0과 1은 암호화가 안되므로 암호화전 +2 복호화 마지막에 -2를 한다.
 // 무조건 6자리를 1개문자로 본다. 빈곳은 fill zero
 
-function zeroFill(number, n){
+let zeroFill = _.memoize(function zeroFill(number, n){
     n -= number.toString().length;
     if ( n > 0 )
     {
         return new Array( n + (/\./.test( number ) ? 2 : 1) ).join( '0' ) + number;
     }
     return number + ""; // always return a string
-}
+});
