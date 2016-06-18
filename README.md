@@ -1,6 +1,9 @@
 # SmartDoorlockServer
 Smart Doorlock Middle Server
 
+# TODO LIST
+- [ ] try catch문 에러 처리문 추가.
+
 # DB 구조
 
 <div id="page_content"><div>

@@ -1,3 +1,9 @@
+/**
+ * @module route
+ */
+
+"use strict"
+
 import rsa from './rsa';
 import user from './user';
 

@@ -1,9 +1,16 @@
-'use strict';
+/**
+ * @module util/db
+ */
+
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.saveHistory = exports.setGCMRegistrationId = exports.registUser = exports.checkDoorlockKey = exports.login = undefined;
+
+var _assign = require('babel-runtime/core-js/object/assign');
+
+var _assign2 = _interopRequireDefault(_assign);
 
 var _regenerator = require('babel-runtime/regenerator');
 
@@ -13,7 +20,14 @@ var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
 
 var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
 
-var login = exports.login = function () {
+/**
+ * 로그인 시도
+ * @method login
+ * @param  {object}     loginInfo   id와 password를 가진 객체
+ * @return {object}                 { result: 성공/실패여부, user:성공시 유저정보객체 반환, 실패시 null }
+ */
+
+var login = function () {
     var ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(loginInfo) {
         var columns, query, _ref, rows;
 
@@ -22,9 +36,9 @@ var login = exports.login = function () {
                 switch (_context.prev = _context.next) {
                     case 0:
                         columns = ['id', 'name', 'password', 'registDate', 'latestAuthDate', 'doorlockId'];
-                        query = 'SELECT ' + arrayToSelectQuery(columns) + ' FROM `user` ' + objectToWhereQuery(loginInfo);
+                        query = 'SELECT ' + selectQueryHelper(columns) + ' FROM ' + tableNameQueryHelper('user') + ' ' + whereQueryHelper(loginInfo);
                         _context.next = 4;
-                        return execQuery(query);
+                        return (0, _execCacheQuery2.default)(query);
 
                     case 4:
                         _ref = _context.sent;
@@ -35,10 +49,10 @@ var login = exports.login = function () {
                             break;
                         }
 
-                        throw new Error('login fail');
+                        return _context.abrupt('return', { result: false, user: null });
 
                     case 8:
-                        return _context.abrupt('return', rows[0]);
+                        return _context.abrupt('return', { result: false, user: rows[0] });
 
                     case 9:
                     case 'end':
@@ -52,7 +66,15 @@ var login = exports.login = function () {
     };
 }();
 
-var checkDoorlockKey = exports.checkDoorlockKey = function () {
+/**
+ * 도어락 고유키, 아이디 체크
+ * @method checkDoorlockKey
+ * @param  {object}     doorlockInfo    doorlockId, doorlockKey를 가진 객체
+ * @return {boolean}                    일치여부
+ */
+
+
+var checkDoorlockKey = function () {
     var ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee2(doorlockInfo) {
         var query, _ref2, rows;
 
@@ -60,9 +82,9 @@ var checkDoorlockKey = exports.checkDoorlockKey = function () {
             while (1) {
                 switch (_context2.prev = _context2.next) {
                     case 0:
-                        query = 'SELECT `id` FROM `doorlock` ' + objectToWhereQuery(doorlockInfo);
+                        query = 'SELECT `id` FROM ' + tableNameQueryHelper('doorlock') + ' ' + whereQueryHelper(doorlockInfo);
                         _context2.next = 3;
-                        return execQuery(query);
+                        return (0, _execCacheQuery2.default)(query);
 
                     case 3:
                         _ref2 = _context2.sent;
@@ -73,10 +95,10 @@ var checkDoorlockKey = exports.checkDoorlockKey = function () {
                             break;
                         }
 
-                        throw new Error('no match doorlock key');
+                        return _context2.abrupt('return', false);
 
                     case 7:
-                        return _context2.abrupt('return');
+                        return _context2.abrupt('return', true);
 
                     case 8:
                     case 'end':
@@ -90,7 +112,15 @@ var checkDoorlockKey = exports.checkDoorlockKey = function () {
     };
 }();
 
-var registUser = exports.registUser = function () {
+/**
+ * 유저 등록용 함수
+ * @method registUser
+ * @param  {object}   registInfo    name, doorlockId를 가진 객체
+ * @return {object}                 유저 정보객체(id, password, registDate, latestAuthDate, name, doorlockId)
+ */
+
+
+var registUser = function () {
     var ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee3(registInfo) {
         var query, _ref3, rows;
 
@@ -103,9 +133,9 @@ var registUser = exports.registUser = function () {
                         registInfo.registDate = Math.floor(+new Date() / 1000);
                         registInfo.latestAuthDate = registInfo.registDate;
 
-                        query = 'INSERT INTO `doorlock`.`user` ' + objectToInsertQuery(registInfo);
+                        query = 'INSERT INTO ' + tableNameQueryHelper('user') + ' ' + insertQueryHelper(registInfo);
                         _context3.next = 7;
-                        return execQuery(query);
+                        return (0, _execCacheQuery2.default)(query);
 
                     case 7:
                         _ref3 = _context3.sent;
@@ -128,7 +158,13 @@ var registUser = exports.registUser = function () {
     };
 }();
 
-var setGCMRegistrationId = exports.setGCMRegistrationId = function () {
+/**
+ * 특정 유저의 GCMRegistrationId 데이터 갱신
+ * @method setGCMRegistrationId
+ * @param  {object}             GCMInfo     userId, GCMRegistrationId를 가진 객체
+ */
+
+var setGCMRegistrationId = function () {
     var ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee4(GCMInfo) {
         var query, _ref4, rows;
 
@@ -136,9 +172,9 @@ var setGCMRegistrationId = exports.setGCMRegistrationId = function () {
             while (1) {
                 switch (_context4.prev = _context4.next) {
                     case 0:
-                        query = 'SELECT * FROM  `gcm` ' + objectToWhereQuery({ userId: GCMInfo.userId });
+                        query = 'SELECT * FROM  ' + tableNameQueryHelper('gcm') + ' ' + whereQueryHelper({ userId: GCMInfo.userId });
                         _context4.next = 3;
-                        return execQuery(query);
+                        return (0, _execCacheQuery2.default)(query);
 
                     case 3:
                         _ref4 = _context4.sent;
@@ -147,14 +183,14 @@ var setGCMRegistrationId = exports.setGCMRegistrationId = function () {
 
                         if (rows.length >= 1) {
                             //UPDATE
-                            query = 'UPDATE `doorlock`.`gcm` ' + objectToUpdateQuery(GCMInfo) + ' ' + objectToWhereQuery({ userId: GCMInfo.userId });
+                            query = 'UPDATE ' + tableNameQueryHelper('gcm') + ' ' + updateQueryHelper(GCMInfo) + ' ' + whereQueryHelper({ userId: GCMInfo.userId });
                         } else {
                             //INSERT
-                            query = 'INSERT INTO  `doorlock`.`gcm` ' + objectToInsertQuery(GCMInfo);
+                            query = 'INSERT INTO  ' + tableNameQueryHelper('gcm') + ' ' + insertQueryHelper(GCMInfo);
                         }
 
                         _context4.next = 8;
-                        return execQuery(query);
+                        return (0, _execCacheQuery2.default)(query);
 
                     case 8:
                         return _context4.abrupt('return', _context4.sent);
@@ -171,18 +207,24 @@ var setGCMRegistrationId = exports.setGCMRegistrationId = function () {
     };
 }();
 
-var saveHistory = exports.saveHistory = function () {
-    var ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee5(_ref5) {
-        var userId = _ref5.userId;
-        var state = _ref5.state;
+/**
+ * 인증기록 저장
+ * @method saveHistory
+ * @param  {object}     historyInfo     userId, state, authtime를 가진 객체
+ * @return {Promise}                    Promise객체
+ */
+
+
+var saveHistory = function () {
+    var ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee5(historyInfo) {
         var query;
         return _regenerator2.default.wrap(function _callee5$(_context5) {
             while (1) {
                 switch (_context5.prev = _context5.next) {
                     case 0:
-                        query = 'INSERT INTO  `doorlock`.`history` ' + objectToInsertQuery({ userId: userId, state: state, id: null, authtime: getNowDateTime() });
+                        query = 'INSERT INTO  ' + tableNameQueryHelper('history') + ' ' + insertQueryHelper((0, _assign2.default)({}, historyInfo, { id: null }));
                         _context5.next = 3;
-                        return execQuery(query);
+                        return (0, _execCacheQuery2.default)(query);
 
                     case 3:
                         return _context5.abrupt('return', _context5.sent);
@@ -199,47 +241,92 @@ var saveHistory = exports.saveHistory = function () {
     };
 }();
 
-exports.doorlockInfo = doorlockInfo;
+/**
+ * 특정 유저의 최종 인증시간 업데이트
+ * @method updateLatestAuthDate
+ * @param  {int}        userId          업데이트될 user id
+ * @param  {int}        latestAuthDate  최종 인증시간
+ * @return {Promise}                    Promise객체
+ */
 
-var _mysql = require('mysql');
 
-var _mysql2 = _interopRequireDefault(_mysql);
+var updateLatestAuthDate = function () {
+    var ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee6(userId, latestAuthDate) {
+        var query;
+        return _regenerator2.default.wrap(function _callee6$(_context6) {
+            while (1) {
+                switch (_context6.prev = _context6.next) {
+                    case 0:
+                        query = 'UPDATE ' + tableNameQueryHelper('user') + ' ' + updateQueryHelper({ latestAuthDate: latestAuthDate }) + ' ' + whereQueryHelper({ userId: userId });
+                        _context6.next = 3;
+                        return (0, _execCacheQuery2.default)(query);
 
-var _q = require('q');
+                    case 3:
+                        return _context6.abrupt('return', _context6.sent);
 
-var _q2 = _interopRequireDefault(_q);
+                    case 4:
+                    case 'end':
+                        return _context6.stop();
+                }
+            }
+        }, _callee6, this);
+    }));
+    return function updateLatestAuthDate(_x6, _x7) {
+        return ref.apply(this, arguments);
+    };
+}();
+
+/**
+ * 특정 doorlockId를 가진 유저의 GCMRegistrationId를 get
+ * @method getDoorlockIdOfGCMRegistrationId
+ * @param  {int}        doorlockId  특정 doorlock id
+ * @return {Promise}                Promise객체
+ */
+
+
+var getDoorlockIdOfGCMRegistrationId = function () {
+    var ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee7(doorlockId) {
+        var query;
+        return _regenerator2.default.wrap(function _callee7$(_context7) {
+            while (1) {
+                switch (_context7.prev = _context7.next) {
+                    case 0:
+                        query = 'Select gcm.* From ' + tableNameQueryHelper('gcm') + ' INNER JOIN ' + tableNameQueryHelper('user') + ' ON `gcm`.`userId` = `user`.`id` AND `user`.`doorlockId` = \'' + doorlockId + '\'';
+                        _context7.next = 3;
+                        return (0, _execCacheQuery2.default)(query);
+
+                    case 3:
+                        return _context7.abrupt('return', _context7.sent);
+
+                    case 4:
+                    case 'end':
+                        return _context7.stop();
+                }
+            }
+        }, _callee7, this);
+    }));
+    return function getDoorlockIdOfGCMRegistrationId(_x8) {
+        return ref.apply(this, arguments);
+    };
+}();
+
+/**
+ * 랜덤문자열 생성
+ * @method makeRandomString
+ * @param  {int}            size 문자열 길이
+ * @return {String}              생성된 랜덤문자열
+ */
+
+
+var _execCacheQuery = require('./execCacheQuery');
+
+var _execCacheQuery2 = _interopRequireDefault(_execCacheQuery);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var pool = _mysql2.default.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: 'wkdTlqkf',
-    database: 'doorlock'
-});
-
-function execQuery(query) {
-    var def = _q2.default.defer();
-
-    console.log(query);
-
-    pool.query(query, function (err, rows, fields) {
-        if (err) {
-            console.log('execQuery Error');
-            def.reject(err);
-        }
-        console.log('execQuery');
-        def.resolve({ rows: rows, fields: fields });
-    });
-
-    return def.promise;
-}
-
 function doorlockInfo() {
-    return (0, _q2.default)();
-}
-
-function makeRandomString(size) {
+    return Q();
+}function makeRandomString(size) {
     var text = "";
     var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -248,7 +335,13 @@ function makeRandomString(size) {
     }return text;
 }
 
-function objectToWhereQuery(obj) {
+/**
+ * where 쿼리 제작 헬퍼
+ * @method whereQueryHelper
+ * @param  {Object}           obj
+ * @return {String}
+ */
+function whereQueryHelper(obj) {
     var query = [];
     for (var key in obj) {
         var val = obj[key];
@@ -263,7 +356,13 @@ function objectToWhereQuery(obj) {
     return 'WHERE ' + query.join(' AND ');
 }
 
-function objectToInsertQuery(obj) {
+/**
+ * insert 쿼리 헬퍼
+ * @method insertQueryHelper
+ * @param  {Object}           obj
+ * @return {String}
+ */
+function insertQueryHelper(obj) {
     var keys = [];
     var vals = [];
     for (var key in obj) {
@@ -278,7 +377,13 @@ function objectToInsertQuery(obj) {
     return '(' + keys.join(', ') + ') VALUES (' + vals.join(', ') + ')';
 }
 
-function objectToUpdateQuery(obj) {
+/**
+ * update 쿼리 헬퍼
+ * @method updateQueryHelper
+ * @param  {Object}           obj
+ * @return {String}
+ */
+function updateQueryHelper(obj) {
     var query = [];
     for (var key in obj) {
         var val = obj[key];
@@ -293,12 +398,35 @@ function objectToUpdateQuery(obj) {
     return 'SET ' + query.join(', ');
 }
 
-function arrayToSelectQuery(arr) {
+/**
+ * select 쿼리 헬퍼
+ * @method selectQueryHelper
+ * @param  {Array}           arr
+ * @return {String}
+ */
+function selectQueryHelper(arr) {
     return arr.map(function (val) {
         return '`' + val + '`';
     }).join(', ');
 }
 
-function getNowDateTime() {
-    return parseInt(+new Date() / 1000);
+/**
+ * 테이블명 쿼리 헬퍼
+ * @method tableNameQueryHelper
+ * @param  {String}           tableName
+ * @return {String}
+ */
+function tableNameQueryHelper(tableName) {
+    return '`doorlock`.`' + tableName + '`';
 }
+
+exports.default = {
+    login: login,
+    checkDoorlockKey: checkDoorlockKey,
+    registUser: registUser,
+    doorlockInfo: doorlockInfo,
+    setGCMRegistrationId: setGCMRegistrationId,
+    saveHistory: saveHistory,
+    updateLatestAuthDate: updateLatestAuthDate,
+    getDoorlockIdOfGCMRegistrationId: getDoorlockIdOfGCMRegistrationId
+};
