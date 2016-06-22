@@ -43,6 +43,7 @@ var login = function () {
                     case 4:
                         _ref = _context.sent;
                         rows = _ref.rows;
+                        //console.log(rows.length);
 
                         if (!(rows.length !== 1)) {
                             _context.next = 8;
@@ -52,7 +53,7 @@ var login = function () {
                         return _context.abrupt('return', { result: false, user: null });
 
                     case 8:
-                        return _context.abrupt('return', { result: false, user: rows[0] });
+                        return _context.abrupt('return', { result: true, user: rows[0] });
 
                     case 9:
                     case 'end':
@@ -172,15 +173,16 @@ var setGCMRegistrationId = function () {
             while (1) {
                 switch (_context4.prev = _context4.next) {
                     case 0:
+                        console.log('GCMInfo', GCMInfo);
                         query = 'SELECT * FROM  ' + tableNameQueryHelper('gcm') + ' ' + whereQueryHelper({ userId: GCMInfo.userId });
-                        _context4.next = 3;
+                        _context4.next = 4;
                         return (0, _execCacheQuery2.default)(query);
 
-                    case 3:
+                    case 4:
                         _ref4 = _context4.sent;
                         rows = _ref4.rows;
 
-
+                        console.log('query', query);
                         if (rows.length >= 1) {
                             //UPDATE
                             query = 'UPDATE ' + tableNameQueryHelper('gcm') + ' ' + updateQueryHelper(GCMInfo) + ' ' + whereQueryHelper({ userId: GCMInfo.userId });
@@ -188,14 +190,14 @@ var setGCMRegistrationId = function () {
                             //INSERT
                             query = 'INSERT INTO  ' + tableNameQueryHelper('gcm') + ' ' + insertQueryHelper(GCMInfo);
                         }
-
-                        _context4.next = 8;
+                        console.log('query', query);
+                        _context4.next = 11;
                         return (0, _execCacheQuery2.default)(query);
 
-                    case 8:
+                    case 11:
                         return _context4.abrupt('return', _context4.sent);
 
-                    case 9:
+                    case 12:
                     case 'end':
                         return _context4.stop();
                 }
@@ -244,20 +246,20 @@ var saveHistory = function () {
 /**
  * 특정 유저의 최종 인증시간 업데이트
  * @method updateLatestAuthDate
- * @param  {int}        userId          업데이트될 user id
+ * @param  {int}        id              업데이트될 user id
  * @param  {int}        latestAuthDate  최종 인증시간
  * @return {Promise}                    Promise객체
  */
 
 
 var updateLatestAuthDate = function () {
-    var ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee6(userId, latestAuthDate) {
+    var ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee6(id, latestAuthDate) {
         var query;
         return _regenerator2.default.wrap(function _callee6$(_context6) {
             while (1) {
                 switch (_context6.prev = _context6.next) {
                     case 0:
-                        query = 'UPDATE ' + tableNameQueryHelper('user') + ' ' + updateQueryHelper({ latestAuthDate: latestAuthDate }) + ' ' + whereQueryHelper({ userId: userId });
+                        query = 'UPDATE ' + tableNameQueryHelper('user') + ' ' + updateQueryHelper({ latestAuthDate: latestAuthDate }) + ' ' + whereQueryHelper({ id: id });
                         _context6.next = 3;
                         return (0, _execCacheQuery2.default)(query);
 
@@ -286,7 +288,8 @@ var updateLatestAuthDate = function () {
 
 var getDoorlockIdOfGCMRegistrationId = function () {
     var ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee7(doorlockId) {
-        var query;
+        var query, _ref5, rows;
+
         return _regenerator2.default.wrap(function _callee7$(_context7) {
             while (1) {
                 switch (_context7.prev = _context7.next) {
@@ -296,9 +299,13 @@ var getDoorlockIdOfGCMRegistrationId = function () {
                         return (0, _execCacheQuery2.default)(query);
 
                     case 3:
-                        return _context7.abrupt('return', _context7.sent);
+                        _ref5 = _context7.sent;
+                        rows = _ref5.rows;
+                        return _context7.abrupt('return', rows.map(function (obj) {
+                            return obj.GCMRegistrationId;
+                        }));
 
-                    case 4:
+                    case 6:
                     case 'end':
                         return _context7.stop();
                 }

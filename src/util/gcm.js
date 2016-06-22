@@ -5,7 +5,9 @@
 "use strict"
 
 import nodeGCM from 'node-gcm';
-import db from 'db';
+import Q from 'q';
+
+import db from './db';
 
 /** @type {String} GCM 서버용 비밀키 */
 const API_KEY = 'AIzaSyAO6cxu_A2_DtdudkCeGD2fTNzrwDufmlk';
@@ -21,12 +23,13 @@ const sender = new nodeGCM.Sender(API_KEY);
  * @return {Promise}                Promise객체
  */
 function send({doorlockId, message, type}){
+    //console.log('started send');
     let def = Q.defer();
 
-    (async function(){
+    (async function(def){
+        //console.log('getDoorlockIdOfGCMRegistrationId')
         let GCMRegistrationIdList = await db.getDoorlockIdOfGCMRegistrationId(doorlockId);
-
-        //@TODO GCMRegistrationIdList 알맞게 처리
+        console.log('GCMRegistrationIdList', GCMRegistrationIdList);
         sender.send((new nodeGCM.Message({
             data: {
                 info: {
@@ -39,7 +42,7 @@ function send({doorlockId, message, type}){
             if(err) def.reject();
             else    def.resolve();
         });
-    })();
+    })(def);
 
     return def.promise;
 }
@@ -52,6 +55,7 @@ function send({doorlockId, message, type}){
  */
 async function authSuccess({doorlockId, name}){
     //@TODO message 알맞게 처리
+    //console.log('send')
     return await send({
         doorlockId,
         message: `문이 열렸습니다. (${name})`,

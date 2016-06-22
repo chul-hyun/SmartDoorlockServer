@@ -20,7 +20,7 @@ const router = express.Router();
  * 로그인을 시도, 실패시 loginFailed : true를 보내고 종료하게 된다.
  * 성공시 다음 라우터 함수 실행
  */
-router.use(async function (req, res, next) {
+router.use((req, res, next)=>(async function () {
     let {loginInfo}    = req.body;
     // 로그인 시도
     let {result, user} = await db.login(loginInfo);
@@ -28,46 +28,54 @@ router.use(async function (req, res, next) {
     if(!result){
         res.json({
             loginFailed : true
-        });
+        }).end();
         return;
     }
+
+    //console.log('user', user);
 
     // 유저정보 저장
     req.body.user = user;
     // 다음함수 실행
     next();
-});
+})());
 
 // 도어락 문열기
-router.post('/unlock', async function (req, res) {
+router.post('/unlock', (req, res)=>(async function () {
     let user = req.body.user;
     let authtime = getNowDateTime();
 
     // 도어락 문열기 시도
     await tcp.dooropen();
     // 최근 인증 날짜 업데이트
-    await db.updateLatestAuthDate({userId: user.id, authtime});
+    await db.updateLatestAuthDate(user.id, authtime);
     // 인증 기록 저장
     await db.saveHistory({userId: user.id, state: 'success', authtime});
     // 인증된것을 알리는 GCM 전송
+    //console.log('authSuccess')
     await gcm.authSuccess({doorlockId: user.doorlockId, name: user.name});
 
+    //console.log('json')
     res.json({
         result : true
-    });
-});
+    }).end();
+    return;
+})());
 
 // GCMRegistrationId 값 업데이트
-router.post('/setGCMRegistrationId', async function (req, res) {
+router.post('/setGCMRegistrationId', (req, res)=>(async function () {
+    console.log('/setGCMRegistrationId')
     let GCMRegistrationId = req.body.data;
-
+    let user = req.body.user;
+    console.log('GCMRegistrationId', GCMRegistrationId);
     // GCMRegistrationId 값 업데이트 시도
     await db.setGCMRegistrationId({userId:user.id, GCMRegistrationId});
-
+    console.log('end setGCMRegistrationId');
     res.json({
         result : true
-    });
-});
+    }).end();
+    return;
+})());
 
 /**
  * 현재 시간 반환 (단위: s)

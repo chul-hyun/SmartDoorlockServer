@@ -5,6 +5,7 @@
 "use strict"
 
 import _ from "lodash";
+import { argToStr } from './func.js'
 
 /**
  * 공개키(암호화용) N, e 와 개인키(복호화용) N, d 를 생성 (공개키 N == 개인키 N)
@@ -31,12 +32,15 @@ function initRSA(){
     let phiN =  p_1 * q_1;
 
     // phiN보단 작고 phiN과 서로소인 정수 e를 찾는다.
+    //console.log('getRelativelyPrime', phiN);
     let e = getRelativelyPrime(phiN);
+    //console.log('e', e);
 
     // 확장된 유클리드 호제법을 이용하여 d * e를 phiN로 나누었을때
     // 나머지가 1인 정수 d를 찾는다.
+    //console.log('extendedEuclid');
     let d = extendedEuclid(e, phiN)
-
+    //console.log('d', d);
     return {
         N, e, d
     }
@@ -51,11 +55,9 @@ function initRSA(){
  * @param  {int}        N       개인키 N
  * @return {promise}            promise 객체
  */
-let decodeRSA = _.memoize(function decodeRSA(code, d, N){
-    return new Promise((resolve)=>{
-        resolve(powMod(code, d, N));
-    })
-})
+function decodeRSA(code, d, N){
+    return new Promise((resolve) => resolve(powMod(code, d, N)));
+}
 
 /**
  * 암호화된 JSON 문자열 복호화 함수 (암호화된 문자열 -> JSON문자열 -> JSON객체)
@@ -66,6 +68,7 @@ let decodeRSA = _.memoize(function decodeRSA(code, d, N){
  * @return {promise}                promise 객체
  */
 function decodeJSON(screetList, d, N){
+    //console.log(screetList, d, N);
     return new Promise((resolve)=>{
         let promiseList = [];
         screetList.forEach((code) => promiseList.push(decodeRSA(code, d, N)));
@@ -129,20 +132,9 @@ function getPromiseList(max){
  * @param  {int}    b
  * @return {int}        a와 b의 최대 공약수
  */
-let gcd = _.memoize(function gcd(a, b) {
+function gcd(a, b) {
     return !!b ? gcd(b, a % b) : a;
-});
-
-/**
- * 나머지 연산 함수
- * @method mod
- * @param  {int}    x   피제수
- * @param  {int}    m   제수
- * @return {int}        x / m 나머지값
- */
-let mod = _.memoize(function mod(x, m){
-    return x % m;
-});
+}
 
 /**
  * 고속 누승 알고리즘 구현.
@@ -184,15 +176,79 @@ function getRelativelyPrime(num){
     }
 }
 
+
+
 /**
  * 확장된 유클리드 알고리즘
- * http://a.nex.kr.pe/wordpress/2015/10/21/제-5강-확장-유클리드-알고리즘-function/
+ * http://bbolmin.tistory.com/45
  * @method extendedEuclid
  * @param  {int}    a   r1
  * @param  {int}    b   r2
  * @return {int}        t1
  */
- let extendedEuclid = _.memoize(function extendedEuclid(a, b) {
+function extendedEuclid(r1, r2){
+    if(r2 > r1){
+        let tmp = r1;
+        r1 = r2;
+        r2 = tmp;
+    }
+    let s1  = 1;
+    let s2  = 0;
+    let t1  = 0;
+    let t2  = 1;
+    let tmp = r1;
+
+    while(r2){
+        let q = Math.floor(r1 / r2);
+        let r = Math.floor(r1 % r2);
+        let s = s1 - q*s2;
+        let t = t1 - q*t2;
+
+        r1 = r2;
+        r2 = r;
+        s1 = s2;
+        s2 = s;
+        t1 = t2;
+        t2 = t;
+    }
+
+    if(t1 < 0){
+        t1 += tmp;
+    }
+    return t1;
+}
+
+/**
+ * number값을 n자리수만큼 빈곳을 0으로 채운 문자열 반환.
+ * @method zeroFill
+ * @param  {int}    number  바꿀 수
+ * @param  {int}    n       자리수
+ * @return {string}         0으로 채워진 문자열
+ * @example zeroFill(10, 4) = '0010'
+ */
+function zeroFill(number, n){
+    n -= number.toString().length;
+    if ( n > 0 )
+    {
+        return new Array( n + (/\./.test( number ) ? 2 : 1) ).join( '0' ) + number;
+    }
+    return number + ""; // always return a string
+}
+
+
+
+//@TODO 아래함수들은 삭제예정.
+
+
+/**
+ * 확장된 유클리드 알고리즘
+ * http://a.nex.kr.pe/wordpress/2015/10/21/제-5강-확장-유클리드-알고리즘-function/
+ * @method oldExtendedEuclid
+ * @param  {int}    a   r1
+ * @param  {int}    b   r2
+ * @return {int}        t1
+ */
+function oldExtendedEuclid(a, b) {
  	let r1, r2, q, r, t, t1, t2;
  	r1 = a;
  	r2 = b;
@@ -214,29 +270,7 @@ function getRelativelyPrime(num){
     }
 
  	return t2;
-});
-
-/**
- * number값을 n자리수만큼 빈곳을 0으로 채운 문자열 반환.
- * @method zeroFill
- * @param  {int}    number  바꿀 수
- * @param  {int}    n       자리수
- * @return {string}         0으로 채워진 문자열
- * @example zeroFill(10, 4) = '0010'
- */
-let zeroFill = _.memoize(function zeroFill(number, n){
-    n -= number.toString().length;
-    if ( n > 0 )
-    {
-        return new Array( n + (/\./.test( number ) ? 2 : 1) ).join( '0' ) + number;
-    }
-    return number + ""; // always return a string
-});
-
-
-
-
-//@TODO 아래함수들은 삭제예정.
+}
 
 /**
  * Successive Squaring 구현.
@@ -248,7 +282,7 @@ let zeroFill = _.memoize(function zeroFill(number, n){
  * @param  {int}    m   제수
  * @return {int}        x^p mod(m) 계산 결과값
  */
-let oldPowMod = _.memoize(function oldPowMod(x, p, m){
+function oldPowMod(x, p, m){
     // oldPowMod(7, 327, 853) 을 예시로 들고 주석 작성
 
     // 지수값p를 2진수로 변환후 1인 값에 그 인덱스값을 넣는다.
@@ -291,7 +325,7 @@ let oldPowMod = _.memoize(function oldPowMod(x, p, m){
     // 7(mod 853) * 49(mod 853) * 123(mod 853) * 298(mod 853) * 695(mod 853)
     // = ((((7(mod 853) * 49)(mod 853) * 123)(mod 853) * 298)(mod 853) * 695)(mod 853)
     return binary.reduce((result, val) => mod(result * val, m), 1);
-});
+}
 
 /**
  * max값 크기의 배열에 num^(2^n) mod(m) 의 값을 넣는다.
@@ -301,7 +335,7 @@ let oldPowMod = _.memoize(function oldPowMod(x, p, m){
  * @param  {int}    m   제수
  * @return {Array}      계산 결과값 배열
  */
-let getPowModBinaryList = _.memoize(function getPowModBinaryList(max, num, m){
+function getPowModBinaryList(max, num, m){
     let binary = _.fill(Array(max - 1), true);
     let result = [num];
     binary.reduce(pre => {
@@ -310,41 +344,20 @@ let getPowModBinaryList = _.memoize(function getPowModBinaryList(max, num, m){
       return val;
     }, num)
     return result;
-});
+}
 
+/**
+ * 나머지 연산 함수
+ * @method mod
+ * @param  {int}    x   피제수
+ * @param  {int}    m   제수
+ * @return {int}        x / m 나머지값
+ */
+function mod(x, m){
+    return x % m;
+}
 
-let oldExtendedEuclid = _.memoize(function oldExtendedEuclid(r1, r2){
-    if(r2 > r1){
-        let tmp = r1;
-        r1 = r2;
-        r2 = tmp;
-    }
-    let s1  = 1;
-    let s2  = 0;
-    let t1  = 0;
-    let t2  = 1;
-    let tmp = r1;
-
-    while(r2){
-        let q = Math.floor(r1 / r2);
-        let r = Math.floor(r1 % r2);
-        let s = s1 - q*s2;
-        let t = t1 - q*t2;
-
-        r1 = r2;
-        r2 = r;
-        s1 = s2;
-        s2 = s;
-        t1 = t2;
-        t2 = t;
-    }
-
-    if(t1 < 0){
-        t1 += tmp;
-    }
-    return t1;
-});
 
 export default {
-    initRSA
+    initRSA, decodeJSON
 }

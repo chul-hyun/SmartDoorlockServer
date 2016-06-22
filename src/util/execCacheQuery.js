@@ -142,22 +142,25 @@ function execQuery(){
 
     let { query, canUseCache, def } = pendQueryList.shift();
 
-    console.log('execQuery', query);
-
     // 캐시 사용 가능시
     if(canUseCache){
+        //console.log('use cache', query)
         def.resolve(getCache(query));
 
         queryRuning = false;
         execQuery();
     }else{
+        console.log('exec query', query)
         // 캐시 사용 불가능
         pool.query(query, (err, rows, fields)=> {
             if(err){
                 console.log('execQuery Error', query)
                 def.reject(err);
             }else{
+                //console.log('set cache');
+                //console.log(query, { rows, fields });
                 setCache(query, { rows, fields });
+                //console.log('resolve');
                 def.resolve({ rows, fields });
             }
 

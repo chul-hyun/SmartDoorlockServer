@@ -24,8 +24,6 @@ gulp.task('server_stop', [], function(cb){
     });
 })
 
-gulp.task('build', ['build_babel', 'copy'])
-
 gulp.task('build_babel', ['clean'], function(){
     return gulp.src(`${srcDir}/**/*.js`)
 		.pipe(babel({
@@ -33,19 +31,21 @@ gulp.task('build_babel', ['clean'], function(){
             plugins: ["transform-async-to-generator", "transform-runtime"]
 		}))
 		.pipe(gulp.dest(distDir));
-});
+})
 
 gulp.task('copy', ['clean'], function(){
     return gulp.src([`!./${srcDir}/**/*.js`, `./${srcDir}/**/*`], {base: `./${srcDir}`})
         .pipe(gulp.dest('./dist'));
-});
+})
 
 gulp.task('clean', function () {
     return gulp.src(distDir, {read: false}).pipe(clean());
-});
+})
 
 gulp.task('default', ['server_start']);
 
+gulp.task('build', ['build_babel', 'copy'])
+
 gulp.task('watch', ['default'], function(){
     gulp.watch(`${srcDir}/**/*`, ['default']);
-});
+})

@@ -17,11 +17,12 @@ async function login(loginInfo){
     let query = `SELECT ${selectQueryHelper(columns)} FROM ${tableNameQueryHelper('user')} ${whereQueryHelper(loginInfo)}`;
 
     let { rows } = await execCacheQuery(query);
+    //console.log(rows.length);
     if (rows.length !== 1){
         return {result: false, user: null};
     }
 
-    return {result: false, user: rows[0]};
+    return {result: true, user: rows[0]};
 }
 
 /**
@@ -71,9 +72,10 @@ function doorlockInfo(){
  * @param  {object}             GCMInfo     userId, GCMRegistrationId를 가진 객체
  */
 async function setGCMRegistrationId(GCMInfo){
+    console.log('GCMInfo', GCMInfo);
     let query = `SELECT * FROM  ${tableNameQueryHelper('gcm')} ${whereQueryHelper({userId: GCMInfo.userId})}`;
     let { rows } = await execCacheQuery(query);
-
+    console.log('query', query);
     if (rows.length >= 1){
         //UPDATE
         query = `UPDATE ${tableNameQueryHelper('gcm')} ${updateQueryHelper(GCMInfo)} ${whereQueryHelper({userId: GCMInfo.userId})}`;
@@ -81,7 +83,7 @@ async function setGCMRegistrationId(GCMInfo){
         //INSERT
         query = `INSERT INTO  ${tableNameQueryHelper('gcm')} ${insertQueryHelper(GCMInfo)}`;
     }
-
+    console.log('query', query);
     return await execCacheQuery(query);
 }
 
@@ -99,12 +101,12 @@ async function saveHistory(historyInfo){
 /**
  * 특정 유저의 최종 인증시간 업데이트
  * @method updateLatestAuthDate
- * @param  {int}        userId          업데이트될 user id
+ * @param  {int}        id              업데이트될 user id
  * @param  {int}        latestAuthDate  최종 인증시간
  * @return {Promise}                    Promise객체
  */
-async function updateLatestAuthDate(userId, latestAuthDate){
-    let query = `UPDATE ${tableNameQueryHelper('user')} ${updateQueryHelper({latestAuthDate})} ${whereQueryHelper({userId})}`;
+async function updateLatestAuthDate(id, latestAuthDate){
+    let query = `UPDATE ${tableNameQueryHelper('user')} ${updateQueryHelper({latestAuthDate})} ${whereQueryHelper({id})}`;
     return await execCacheQuery(query);
 }
 
@@ -116,7 +118,10 @@ async function updateLatestAuthDate(userId, latestAuthDate){
  */
 async function getDoorlockIdOfGCMRegistrationId(doorlockId){
     let query = `Select gcm.* From ${tableNameQueryHelper('gcm')} INNER JOIN ${tableNameQueryHelper('user')} ON \`gcm\`.\`userId\` = \`user\`.\`id\` AND \`user\`.\`doorlockId\` = '${doorlockId}'`
-    return await execCacheQuery(query);
+    let { rows } = await execCacheQuery(query);
+    return rows.map((obj)=>{
+        return obj.GCMRegistrationId
+    });
 }
 
 /**
