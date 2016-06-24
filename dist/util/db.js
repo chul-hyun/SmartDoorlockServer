@@ -77,31 +77,32 @@ var login = function () {
 
 var checkDoorlockKey = function () {
     var ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee2(doorlockInfo) {
-        var query, _ref2, rows;
+        var columns, query, _ref2, rows;
 
         return _regenerator2.default.wrap(function _callee2$(_context2) {
             while (1) {
                 switch (_context2.prev = _context2.next) {
                     case 0:
-                        query = 'SELECT `id` FROM ' + tableNameQueryHelper('doorlock') + ' ' + whereQueryHelper(doorlockInfo);
-                        _context2.next = 3;
+                        columns = ['id'];
+                        query = 'SELECT ' + selectQueryHelper(columns) + ' FROM ' + tableNameQueryHelper('doorlock') + ' ' + whereQueryHelper(doorlockInfo);
+                        _context2.next = 4;
                         return (0, _execCacheQuery2.default)(query);
 
-                    case 3:
+                    case 4:
                         _ref2 = _context2.sent;
                         rows = _ref2.rows;
 
                         if (!(rows.length !== 1)) {
-                            _context2.next = 7;
+                            _context2.next = 8;
                             break;
                         }
 
                         return _context2.abrupt('return', false);
 
-                    case 7:
+                    case 8:
                         return _context2.abrupt('return', true);
 
-                    case 8:
+                    case 9:
                     case 'end':
                         return _context2.stop();
                 }
@@ -294,7 +295,7 @@ var getDoorlockIdOfGCMRegistrationId = function () {
             while (1) {
                 switch (_context7.prev = _context7.next) {
                     case 0:
-                        query = 'Select gcm.* From ' + tableNameQueryHelper('gcm') + ' INNER JOIN ' + tableNameQueryHelper('user') + ' ON `gcm`.`userId` = `user`.`id` AND `user`.`doorlockId` = \'' + doorlockId + '\'';
+                        query = 'SELECT gcm.* From ' + tableNameQueryHelper('gcm') + ' INNER JOIN ' + tableNameQueryHelper('user') + ' ON `gcm`.`userId` = `user`.`id` AND `user`.`doorlockId` = \'' + doorlockId + '\'';
                         _context7.next = 3;
                         return (0, _execCacheQuery2.default)(query);
 
@@ -313,6 +314,106 @@ var getDoorlockIdOfGCMRegistrationId = function () {
         }, _callee7, this);
     }));
     return function getDoorlockIdOfGCMRegistrationId(_x8) {
+        return ref.apply(this, arguments);
+    };
+}();
+
+//UPDATE  `doorlock`.`user` SET  `name` =  'test2' WHERE  `user`.`id` =98;
+//@TODO 주석작성
+
+
+var changeName = function () {
+    var ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee8(id, name) {
+        var query;
+        return _regenerator2.default.wrap(function _callee8$(_context8) {
+            while (1) {
+                switch (_context8.prev = _context8.next) {
+                    case 0:
+                        query = 'UPDATE ' + tableNameQueryHelper('user') + ' ' + updateQueryHelper({ name: name }) + ' ' + whereQueryHelper({ id: id });
+                        _context8.next = 3;
+                        return (0, _execCacheQuery2.default)(query);
+
+                    case 3:
+                        return _context8.abrupt('return', _context8.sent);
+
+                    case 4:
+                    case 'end':
+                        return _context8.stop();
+                }
+            }
+        }, _callee8, this);
+    }));
+    return function changeName(_x9, _x10) {
+        return ref.apply(this, arguments);
+    };
+}();
+
+//SELECT `id`,`name`,`registDate`,`latestAuthDate` FROM `user` WHERE `doorlockId` = 2
+//@TODO 주석작성
+
+
+var getUsers = function () {
+    var ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee9(doorlockId) {
+        var columns, query, _ref6, rows;
+
+        return _regenerator2.default.wrap(function _callee9$(_context9) {
+            while (1) {
+                switch (_context9.prev = _context9.next) {
+                    case 0:
+                        columns = ['id', 'name', 'registDate', 'latestAuthDate'];
+                        query = 'SELECT ' + selectQueryHelper(columns) + ' FROM ' + tableNameQueryHelper('user') + ' ' + whereQueryHelper({ doorlockId: doorlockId });
+                        _context9.next = 4;
+                        return (0, _execCacheQuery2.default)(query);
+
+                    case 4:
+                        _ref6 = _context9.sent;
+                        rows = _ref6.rows;
+                        return _context9.abrupt('return', rows.map(function (obj) {
+                            return obj;
+                        }));
+
+                    case 7:
+                    case 'end':
+                        return _context9.stop();
+                }
+            }
+        }, _callee9, this);
+    }));
+    return function getUsers(_x11) {
+        return ref.apply(this, arguments);
+    };
+}();
+
+//@TODO 주석작성
+
+
+var getHistory = function () {
+    var ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee10(doorlockId) {
+        var query, _ref7, rows;
+
+        return _regenerator2.default.wrap(function _callee10$(_context10) {
+            while (1) {
+                switch (_context10.prev = _context10.next) {
+                    case 0:
+                        query = 'SELECT history.*, user.name From ' + tableNameQueryHelper('history') + ' INNER JOIN ' + tableNameQueryHelper('user') + ' ON `history`.`userId` = `user`.`id` AND `user`.`doorlockId` = \'' + doorlockId + '\'';
+                        _context10.next = 3;
+                        return (0, _execCacheQuery2.default)(query);
+
+                    case 3:
+                        _ref7 = _context10.sent;
+                        rows = _ref7.rows;
+                        return _context10.abrupt('return', rows.map(function (obj) {
+                            return obj;
+                        }));
+
+                    case 6:
+                    case 'end':
+                        return _context10.stop();
+                }
+            }
+        }, _callee10, this);
+    }));
+    return function getHistory(_x12) {
         return ref.apply(this, arguments);
     };
 }();
@@ -435,5 +536,8 @@ exports.default = {
     setGCMRegistrationId: setGCMRegistrationId,
     saveHistory: saveHistory,
     updateLatestAuthDate: updateLatestAuthDate,
-    getDoorlockIdOfGCMRegistrationId: getDoorlockIdOfGCMRegistrationId
+    getDoorlockIdOfGCMRegistrationId: getDoorlockIdOfGCMRegistrationId,
+    changeName: changeName,
+    getUsers: getUsers,
+    getHistory: getHistory
 };

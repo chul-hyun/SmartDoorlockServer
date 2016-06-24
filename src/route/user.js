@@ -57,7 +57,47 @@ router.post('/unlock', (req, res)=>(async function () {
 
     //console.log('json')
     res.json({
+        result : true,
+        authtime
+    }).end();
+    return;
+})());
+
+//@TODO 주석작성
+router.post('/changeName', (req, res)=>(async function () {
+    let user = req.body.user;
+    let name = req.body.data;
+
+    await db.changeName(user.id, name);
+
+    res.json({
         result : true
+    }).end();
+    return;
+})());
+
+//@TODO 주석작성
+router.post('/getUsers', (req, res)=>(async function () {
+    let user = req.body.user;
+
+    let users = await db.getUsers(user.doorlockId);
+
+    res.json({
+        result : true,
+        users
+    }).end();
+    return;
+})());
+
+//@TODO 주석작성
+router.post('/getHistory', (req, res)=>(async function () {
+    let user = req.body.user;
+
+    let history = await db.getHistory(user.doorlockId);
+
+    res.json({
+        result : true,
+        history
     }).end();
     return;
 })());

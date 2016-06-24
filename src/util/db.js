@@ -32,7 +32,8 @@ async function login(loginInfo){
  * @return {boolean}                    일치여부
  */
 async function checkDoorlockKey(doorlockInfo){
-    let query = `SELECT \`id\` FROM ${tableNameQueryHelper('doorlock')} ${whereQueryHelper(doorlockInfo)}`;
+    let columns = ['id'];
+    let query = `SELECT ${selectQueryHelper(columns)} FROM ${tableNameQueryHelper('doorlock')} ${whereQueryHelper(doorlockInfo)}`;
     let { rows } = await execCacheQuery(query);
     if (rows.length !== 1){
         return false;
@@ -117,10 +118,37 @@ async function updateLatestAuthDate(id, latestAuthDate){
  * @return {Promise}                Promise객체
  */
 async function getDoorlockIdOfGCMRegistrationId(doorlockId){
-    let query = `Select gcm.* From ${tableNameQueryHelper('gcm')} INNER JOIN ${tableNameQueryHelper('user')} ON \`gcm\`.\`userId\` = \`user\`.\`id\` AND \`user\`.\`doorlockId\` = '${doorlockId}'`
+    let query = `SELECT gcm.* From ${tableNameQueryHelper('gcm')} INNER JOIN ${tableNameQueryHelper('user')} ON \`gcm\`.\`userId\` = \`user\`.\`id\` AND \`user\`.\`doorlockId\` = '${doorlockId}'`
     let { rows } = await execCacheQuery(query);
     return rows.map((obj)=>{
         return obj.GCMRegistrationId
+    });
+}
+
+//UPDATE  `doorlock`.`user` SET  `name` =  'test2' WHERE  `user`.`id` =98;
+//@TODO 주석작성
+async function changeName(id, name){
+    let query = `UPDATE ${tableNameQueryHelper('user')} ${updateQueryHelper({name})} ${whereQueryHelper({id})}`;
+    return await execCacheQuery(query);
+}
+
+//SELECT `id`,`name`,`registDate`,`latestAuthDate` FROM `user` WHERE `doorlockId` = 2
+//@TODO 주석작성
+async function getUsers(doorlockId){
+    let columns  = ['id', 'name', 'registDate', 'latestAuthDate'];
+    let query    = `SELECT ${selectQueryHelper(columns)} FROM ${tableNameQueryHelper('user')} ${whereQueryHelper({doorlockId})}`;
+    let { rows } = await execCacheQuery(query);
+    return rows.map((obj)=>{
+        return obj
+    });
+}
+
+//@TODO 주석작성
+async function getHistory(doorlockId){
+    let query = `SELECT history.*, user.name From ${tableNameQueryHelper('history')} INNER JOIN ${tableNameQueryHelper('user')} ON \`history\`.\`userId\` = \`user\`.\`id\` AND \`user\`.\`doorlockId\` = '${doorlockId}'`
+    let { rows } = await execCacheQuery(query);
+    return rows.map((obj)=>{
+        return obj
     });
 }
 
@@ -231,5 +259,8 @@ export default {
     setGCMRegistrationId,
     saveHistory,
     updateLatestAuthDate,
-    getDoorlockIdOfGCMRegistrationId
+    getDoorlockIdOfGCMRegistrationId,
+    changeName,
+    getUsers,
+    getHistory,
 }
