@@ -418,6 +418,55 @@ var getHistory = function () {
     };
 }();
 
+//@TODO 주석작성
+//SELECT * FROM  `history` WHERE `userId` =98 AND `authtime` >100 AND `state` = 'success'
+
+
+var getHistoryFilter = function () {
+    var ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee11(doorlockId, filter) {
+        var query, _ref8, rows;
+
+        return _regenerator2.default.wrap(function _callee11$(_context11) {
+            while (1) {
+                switch (_context11.prev = _context11.next) {
+                    case 0:
+                        query = 'SELECT history.*, user.name From ' + tableNameQueryHelper('history') + ' INNER JOIN ' + tableNameQueryHelper('user') + ' ON `history`.`userId` = `user`.`id` AND `user`.`doorlockId` = \'' + doorlockId + '\'';
+
+
+                        if (filter.userID > 0) {
+                            query += ' AND `history`.`userId` = \'' + filter.userID + '\'';
+                        }
+
+                        query += ' AND `history`.`authtime` >= ' + filter.startDate;
+
+                        query += ' AND `history`.`authtime` <= ' + filter.endDate;
+
+                        if (filter.searchState !== false) {
+                            query += ' AND `history`.`state` = \'' + filter.searchState + '\'';
+                        }
+
+                        _context11.next = 7;
+                        return (0, _execCacheQuery2.default)(query);
+
+                    case 7:
+                        _ref8 = _context11.sent;
+                        rows = _ref8.rows;
+                        return _context11.abrupt('return', rows.map(function (obj) {
+                            return obj;
+                        }));
+
+                    case 10:
+                    case 'end':
+                        return _context11.stop();
+                }
+            }
+        }, _callee11, this);
+    }));
+    return function getHistoryFilter(_x13, _x14) {
+        return ref.apply(this, arguments);
+    };
+}();
+
 /**
  * 랜덤문자열 생성
  * @method makeRandomString
@@ -539,5 +588,6 @@ exports.default = {
     getDoorlockIdOfGCMRegistrationId: getDoorlockIdOfGCMRegistrationId,
     changeName: changeName,
     getUsers: getUsers,
-    getHistory: getHistory
+    getHistory: getHistory,
+    getHistoryFilter: getHistoryFilter
 };

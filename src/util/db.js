@@ -152,6 +152,29 @@ async function getHistory(doorlockId){
     });
 }
 
+//@TODO 주석작성
+//SELECT * FROM  `history` WHERE `userId` =98 AND `authtime` >100 AND `state` = 'success'
+async function getHistoryFilter(doorlockId, filter){
+    let query = `SELECT history.*, user.name From ${tableNameQueryHelper('history')} INNER JOIN ${tableNameQueryHelper('user')} ON \`history\`.\`userId\` = \`user\`.\`id\` AND \`user\`.\`doorlockId\` = '${doorlockId}'`
+
+    if(filter.userID > 0){
+        query += ` AND \`history\`.\`userId\` = '${filter.userID}'`;
+    }
+
+    query += ` AND \`history\`.\`authtime\` >= ${filter.startDate}`;
+
+    query += ` AND \`history\`.\`authtime\` <= ${filter.endDate}`;
+
+    if(filter.searchState !== false){
+        query += ` AND \`history\`.\`state\` = '${filter.searchState}'`;
+    }
+
+    let { rows } = await execCacheQuery(query);
+    return rows.map((obj)=>{
+        return obj
+    });
+}
+
 /**
  * 랜덤문자열 생성
  * @method makeRandomString
@@ -263,4 +286,5 @@ export default {
     changeName,
     getUsers,
     getHistory,
+    getHistoryFilter,
 }

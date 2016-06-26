@@ -102,6 +102,20 @@ router.post('/getHistory', (req, res)=>(async function () {
     return;
 })());
 
+//@TODO 주석작성
+router.post('/search', (req, res)=>(async function () {
+    let user   = req.body.user;
+    let filter = req.body.data;
+
+    let history = await db.getHistoryFilter(user.doorlockId, filter);
+
+    res.json({
+        result : true,
+        history
+    }).end();
+    return;
+})());
+
 // GCMRegistrationId 값 업데이트
 router.post('/setGCMRegistrationId', (req, res)=>(async function () {
     console.log('/setGCMRegistrationId')

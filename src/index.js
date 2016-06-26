@@ -7,6 +7,8 @@ import route from './route';
 
 import tcp from './util/tcp'
 
+import recvTcp from './recvTcp'
+
 const app = express();
 
 console.log('import modules')
@@ -30,4 +32,4 @@ app.listen(3000, ()=> {
 
 tcp.serverStart(9393, ()=>{
     console.log('tcp server listening on port 9393!');
-})
+});

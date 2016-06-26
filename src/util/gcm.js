@@ -88,7 +88,7 @@ async function tempWarning({doorlockId}){
     //@TODO message 알맞게 처리
     return await send({
         doorlockId,
-        message: '',
+        message: '이상 온도 발생!',
         type: 'temp warning'
     })
 }
