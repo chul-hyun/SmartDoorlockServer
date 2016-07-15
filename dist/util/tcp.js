@@ -70,7 +70,7 @@ var dooropen = function () {
                 switch (_context2.prev = _context2.next) {
                     case 0:
                         _context2.next = 2;
-                        return sendData('dooropen');
+                        return sendData('open door');
 
                     case 2:
                     case 'end':
@@ -234,7 +234,7 @@ function serverStop() {
         var client = _ref.client;
         var clientId = _ref.clientId;
 
-        getPrintClientLog(clientId)('send data: ' + data);
+        getPrintClientLog(clientId)('send data (id: ' + clientId + '): ' + data);
         //@TODO promise (async)함수로 변경하는 모듈 사용.
         client.write(data, function () {
             pendWriteNumber--;

@@ -146,7 +146,7 @@ function sendData(data){ //@TODO 클라이언트 즉, 도어락별로 구분이 
     let pendWriteNumber = clients.length;
 
     clients.forEach(({client, clientId})=>{
-        getPrintClientLog(clientId)(`send data: ${data}`)
+        getPrintClientLog(clientId)(`send data (id: ${clientId}): ${data}`)
         //@TODO promise (async)함수로 변경하는 모듈 사용.
         client.write(data, () => {
             pendWriteNumber--;
@@ -165,7 +165,7 @@ function sendData(data){ //@TODO 클라이언트 즉, 도어락별로 구분이 
  * @return  {promise}   promise 객체
  */
 async function dooropen(){
-    await sendData('dooropen');
+    await sendData('open door');
 }
 
 /**

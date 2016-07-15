@@ -49,18 +49,26 @@ async function checkDoorlockKey(doorlockInfo){
  * @return {object}                 유저 정보객체(id, password, registDate, latestAuthDate, name, doorlockId)
  */
 async function registUser(registInfo){
-    registInfo.id             = null;
-    registInfo.password       = makeRandomString(20);
-    registInfo.registDate     = Math.floor((+new Date())/1000);
-    registInfo.latestAuthDate = registInfo.registDate;
+    registInfo.id                = null
+    registInfo.GCMRegistrationId = null
+    registInfo.password          = makeRandomString(20)
+    registInfo.registDate        = Math.floor((+new Date())/1000)
+    registInfo.latestAuthDate    = registInfo.registDate
+    registInfo.state             = 'registed'
 
-    let query = `INSERT INTO ${tableNameQueryHelper('user')} ${insertQueryHelper(registInfo)}`;
+    let query = `INSERT INTO ${tableNameQueryHelper('user')} ${insertQueryHelper(registInfo)}`
 
-    let { rows } = await execCacheQuery(query);
+    let { rows } = await execCacheQuery(query)
 
-    registInfo.id = rows.insertId;
+    registInfo.id = rows.insertId
 
-    return registInfo;
+    return registInfo
+}
+
+//@TODO 주석작성
+async function unregistUser(userId){
+    let query = `UPDATE ${tableNameQueryHelper('user')} ${updateQueryHelper({state: 'unregisted'})} ${whereQueryHelper({id: userId})}`;
+    return await execCacheQuery(query);
 }
 
 function doorlockInfo(){
@@ -73,25 +81,14 @@ function doorlockInfo(){
  * @param  {object}             GCMInfo     userId, GCMRegistrationId를 가진 객체
  */
 async function setGCMRegistrationId(GCMInfo){
-    console.log('GCMInfo', GCMInfo);
-    let query = `SELECT * FROM  ${tableNameQueryHelper('gcm')} ${whereQueryHelper({userId: GCMInfo.userId})}`;
-    let { rows } = await execCacheQuery(query);
-    console.log('query', query);
-    if (rows.length >= 1){
-        //UPDATE
-        query = `UPDATE ${tableNameQueryHelper('gcm')} ${updateQueryHelper(GCMInfo)} ${whereQueryHelper({userId: GCMInfo.userId})}`;
-    }else{
-        //INSERT
-        query = `INSERT INTO  ${tableNameQueryHelper('gcm')} ${insertQueryHelper(GCMInfo)}`;
-    }
-    console.log('query', query);
+    let query = `UPDATE ${tableNameQueryHelper('user')} ${updateQueryHelper({GCMRegistrationId: GCMInfo.GCMRegistrationId})} ${whereQueryHelper({id: GCMInfo.userId})}`;
     return await execCacheQuery(query);
 }
 
 /**
  * 인증기록 저장
  * @method saveHistory
- * @param  {object}     historyInfo     userId, state, authtime를 가진 객체
+ * @param  {object}     historyInfo     userId, doorlockId, state, authtime를 가진 객체
  * @return {Promise}                    Promise객체
  */
 async function saveHistory(historyInfo){
@@ -118,7 +115,8 @@ async function updateLatestAuthDate(id, latestAuthDate){
  * @return {Promise}                Promise객체
  */
 async function getDoorlockIdOfGCMRegistrationId(doorlockId){
-    let query = `SELECT gcm.* From ${tableNameQueryHelper('gcm')} INNER JOIN ${tableNameQueryHelper('user')} ON \`gcm\`.\`userId\` = \`user\`.\`id\` AND \`user\`.\`doorlockId\` = '${doorlockId}'`
+    let columns  = ['GCMRegistrationId'];
+    let query = `SELECT ${selectQueryHelper(columns)} FROM ${tableNameQueryHelper('user')} ${whereQueryHelper({doorlockId, state: 'registed'})}`;
     let { rows } = await execCacheQuery(query);
     return rows.map((obj)=>{
         return obj.GCMRegistrationId
@@ -145,7 +143,8 @@ async function getUsers(doorlockId){
 
 //@TODO 주석작성
 async function getHistory(doorlockId){
-    let query = `SELECT history.*, user.name From ${tableNameQueryHelper('history')} INNER JOIN ${tableNameQueryHelper('user')} ON \`history\`.\`userId\` = \`user\`.\`id\` AND \`user\`.\`doorlockId\` = '${doorlockId}'`
+    let query = `SELECT history.*, user.name From ${tableNameQueryHelper('history')} LEFT JOIN ${tableNameQueryHelper('user')} ON \`history\`.\`userId\` = \`user\`.\`id\` WHERE \`history\`.\`doorlockId\` = '${doorlockId}' ORDER BY  \`history\`.\`authtime\` ASC`
+    console.log(query);
     let { rows } = await execCacheQuery(query);
     return rows.map((obj)=>{
         return obj
@@ -155,7 +154,7 @@ async function getHistory(doorlockId){
 //@TODO 주석작성
 //SELECT * FROM  `history` WHERE `userId` =98 AND `authtime` >100 AND `state` = 'success'
 async function getHistoryFilter(doorlockId, filter){
-    let query = `SELECT history.*, user.name From ${tableNameQueryHelper('history')} INNER JOIN ${tableNameQueryHelper('user')} ON \`history\`.\`userId\` = \`user\`.\`id\` AND \`user\`.\`doorlockId\` = '${doorlockId}'`
+    let query = `SELECT history.*, user.name From ${tableNameQueryHelper('history')} LEFT JOIN ${tableNameQueryHelper('user')} ON \`history\`.\`userId\` = \`user\`.\`id\` WHERE \`history\`.\`doorlockId\` = '${doorlockId}'`
 
     if(filter.userID > 0){
         query += ` AND \`history\`.\`userId\` = '${filter.userID}'`;
@@ -168,8 +167,10 @@ async function getHistoryFilter(doorlockId, filter){
     if(filter.searchState !== false){
         query += ` AND \`history\`.\`state\` = '${filter.searchState}'`;
     }
+    query += ` ORDER BY  \`history\`.\`authtime\` ASC`;
 
     let { rows } = await execCacheQuery(query);
+    console.log(query)
     return rows.map((obj)=>{
         return obj
     });
@@ -278,6 +279,7 @@ export default {
     login,
     checkDoorlockKey,
     registUser,
+    unregistUser,
     doorlockInfo,
     setGCMRegistrationId,
     saveHistory,

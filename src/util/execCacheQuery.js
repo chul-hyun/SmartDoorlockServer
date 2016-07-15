@@ -55,7 +55,7 @@ pool.query('SHOW TABLES', function initTables(err, rows, fields){
  * @param  {Stirng}       query     실행할 쿼리문
  * @return {Promise}                Promise객체
  */
-export default function execCacheQuery(query){
+function execCacheQuery(query){
     let def = Q.defer();
 
     // 성능 향상을 위한 비동기 실행
@@ -199,3 +199,20 @@ function setCache(query, value){
 let queryToTables = _.memoize(function queryToTables(query){
     return tables.filter((table)=>{ query.match(table) != null })
 });
+
+function execNonCacheQuery(query){
+    let def = Q.defer();
+
+    pool.query(query, (err, rows, fields)=> {
+        if(err){
+            console.log('execQuery Error', query)
+            def.reject(err);
+        }else{
+            def.resolve({ rows, fields });
+        }
+    })
+
+    return def.promise;
+}
+
+export default execNonCacheQuery;

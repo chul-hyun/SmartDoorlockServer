@@ -28,6 +28,10 @@ var _db = require('../util/db');
 
 var _db2 = _interopRequireDefault(_db);
 
+var _gcm = require('../util/gcm');
+
+var _gcm2 = _interopRequireDefault(_gcm);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /** http://expressjs.com/en/4x/api.html#router */
@@ -164,7 +168,6 @@ router.post('/regist', function (req, res) {
                         name = _req$body2.name;
                         doorlockId = _req$body2.doorlockId;
                         doorlockKey = _req$body2.doorlockKey;
-                        //console.log({ name, doorlockId, doorlockKey });
 
                         // 도어락 고유키, id 체크
 
@@ -192,13 +195,16 @@ router.post('/regist', function (req, res) {
                         user = _context3.sent;
 
 
+                        // 유저 등록 메세지 전송
+                        _gcm2.default.newUser({ doorlockId: 2, name: name });
+
                         res.json({
                             result: true,
                             user: user
                         }).end();
                         return _context3.abrupt('return');
 
-                    case 15:
+                    case 16:
                     case 'end':
                         return _context3.stop();
                 }

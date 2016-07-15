@@ -9,6 +9,7 @@ import express from 'express';
 import db from '../util/db';
 import tcp from '../util/tcp'
 import gcm from '../util/gcm'
+import { getNowDateTime } from '../util/func'
 
 /** http://expressjs.com/en/4x/api.html#router */
 const router = express.Router();
@@ -40,8 +41,19 @@ router.use((req, res, next)=>(async function () {
     next();
 })());
 
+global.unlockLatestTime = +new Date();
 // 도어락 문열기
 router.post('/unlock', (req, res)=>(async function () {
+    if(+new Date() - global.unlockLatestTime < 1000 * 5){
+        res.json({
+            result : true,
+            unlock : false,
+            authtime
+        });
+        return;
+    }
+    global.unlockLatestTime = +new Date();
+
     let user = req.body.user;
     let authtime = getNowDateTime();
 
@@ -50,15 +62,24 @@ router.post('/unlock', (req, res)=>(async function () {
     // 최근 인증 날짜 업데이트
     await db.updateLatestAuthDate(user.id, authtime);
     // 인증 기록 저장
-    await db.saveHistory({userId: user.id, state: 'success', authtime});
-    // 인증된것을 알리는 GCM 전송
-    //console.log('authSuccess')
-    await gcm.authSuccess({doorlockId: user.doorlockId, name: user.name});
+    await db.saveHistory({userId: user.id, doorlockId: user.doorlockId, state: 'success', authtime});
 
-    //console.log('json')
     res.json({
         result : true,
+        unlock : true,
         authtime
+    });
+})());
+
+//@TODO 주석작성
+router.post('/unregist', (req, res)=>(async function () {
+    let user = req.body.user;
+
+    // 유저 등록해제
+    await db.unregistUser(user.id);
+
+    res.json({
+        result : true
     }).end();
     return;
 })());
@@ -72,8 +93,7 @@ router.post('/changeName', (req, res)=>(async function () {
 
     res.json({
         result : true
-    }).end();
-    return;
+    });
 })());
 
 //@TODO 주석작성
@@ -85,8 +105,7 @@ router.post('/getUsers', (req, res)=>(async function () {
     res.json({
         result : true,
         users
-    }).end();
-    return;
+    });
 })());
 
 //@TODO 주석작성
@@ -98,8 +117,7 @@ router.post('/getHistory', (req, res)=>(async function () {
     res.json({
         result : true,
         history
-    }).end();
-    return;
+    });
 })());
 
 //@TODO 주석작성
@@ -112,8 +130,7 @@ router.post('/search', (req, res)=>(async function () {
     res.json({
         result : true,
         history
-    }).end();
-    return;
+    });
 })());
 
 // GCMRegistrationId 값 업데이트
@@ -127,17 +144,7 @@ router.post('/setGCMRegistrationId', (req, res)=>(async function () {
     console.log('end setGCMRegistrationId');
     res.json({
         result : true
-    }).end();
-    return;
+    });
 })());
-
-/**
- * 현재 시간 반환 (단위: s)
- * @method getNowDateTime
- * @return {int}       초단위 현재시간
- */
-function getNowDateTime(){
-    return parseInt(+new Date() / 1000);
-}
 
 export default router;

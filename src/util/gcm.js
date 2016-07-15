@@ -4,10 +4,10 @@
 
 "use strict"
 
-import nodeGCM from 'node-gcm';
-import Q from 'q';
+import nodeGCM from 'node-gcm'
+import Q from 'q'
 
-import db from './db';
+import db from './db'
 
 /** @type {String} GCM 서버용 비밀키 */
 const API_KEY = 'AIzaSyAO6cxu_A2_DtdudkCeGD2fTNzrwDufmlk';
@@ -18,7 +18,7 @@ const sender = new nodeGCM.Sender(API_KEY);
  * GCM을 보내기 위한 값
  * @method send
  * @param  {int}        doorlockId  이 도어락 id를 가진 유저에게만 메세지를 전송
- * @param  {String}     message     전송할 메세지
+ * @param  {String}      message     전송할 메세지
  * @param  {String}     type        메세지 타입 (메세지 구분용)
  * @return {Promise}                Promise객체
  */
@@ -50,15 +50,15 @@ function send({doorlockId, message, type}){
 /**
  * 인증 성공 멘세지 전송
  * @method authSuccess
- * @param  {[type]} doorlockId  이 도어락 id를 가진 유저에게만 메세지를 전송
+ * @param  {int} doorlockId  이 도어락 id를 가진 유저에게만 메세지를 전송
  * @return {Promise}            Promise객체
  */
-async function authSuccess({doorlockId, name}){
+async function authSuccess({doorlockId}){
     //@TODO message 알맞게 처리
     //console.log('send')
     return await send({
         doorlockId,
-        message: `문이 열렸습니다. (${name})`,
+        message : `문이 열렸습니다`,
         type: 'auth success'
     })
 }
@@ -66,7 +66,7 @@ async function authSuccess({doorlockId, name}){
 /**
  * 인증 실패 메세지 전송
  * @method authFail
- * @param  {[type]} doorlockId  이 도어락 id를 가진 유저에게만 메세지를 전송
+ * @param  {int} doorlockId  이 도어락 id를 가진 유저에게만 메세지를 전송
  * @return {Promise}            Promise객체
  */
 async function authFail({doorlockId}){
@@ -80,21 +80,35 @@ async function authFail({doorlockId}){
 
 /**
  * 실내 온도 경고 메세지 전송
- * @method tempWarning
- * @param  {[type]} doorlockId  이 도어락 id를 가진 유저에게만 메세지를 전송
+ * @method temperWarning
+ * @param  {int} doorlockId  이 도어락 id를 가진 유저에게만 메세지를 전송
  * @return {Promise}            Promise객체
  */
-async function tempWarning({doorlockId}){
+async function temperWarning({doorlockId}){
     //@TODO message 알맞게 처리
     return await send({
         doorlockId,
         message: '이상 온도 발생!',
-        type: 'temp warning'
+        type: 'temper warning'
+    })
+}
+
+/**
+ * 새로운 유저 등록 메세지 전송
+ * @param  {int} {doorlockId} 이 도어락 id를 가진 유저에게만 메세지를 전송
+ * @return {Promise}            Promise객체
+ */
+async function newUser({doorlockId, name}){
+    //@TODO message 알맞게 처리
+    return await send({
+        doorlockId,
+        message: `새로운 유저(${name})가 등록되었습니다`,
+        type: 'new user'
     })
 }
 
 export default {
-    authSuccess, authFail, tempWarning
+    authSuccess, authFail, temperWarning, newUser
 }
 
 

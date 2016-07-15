@@ -4,10 +4,11 @@
 
 "use strict"
 
-import express from 'express';
+import express from 'express'
 
-import rsa from '../util/rsa';
-import db from '../util/db';
+import rsa from '../util/rsa'
+import db  from '../util/db'
+import gcm from '../util/gcm'
 
 /** http://expressjs.com/en/4x/api.html#router */
 const router = express.Router();
@@ -85,7 +86,6 @@ router.post('/login', (req, res)=>(async function () {
 // 유저 등록
 router.post('/regist', (req, res)=>(async function () {
     let { name, doorlockId, doorlockKey } = req.body;
-    //console.log({ name, doorlockId, doorlockKey });
 
     // 도어락 고유키, id 체크
     let passDoorlockKey = await db.checkDoorlockKey({ id: doorlockId, secretKey: doorlockKey });
@@ -98,8 +98,11 @@ router.post('/regist', (req, res)=>(async function () {
         return;
     }
 
-    // 유저등록
+    // 유저 등록
     let user = await db.registUser({ doorlockId, name });
+
+    // 유저 등록 메세지 전송
+    gcm.newUser({doorlockId: 2, name});
 
     res.json({
         result : true,
