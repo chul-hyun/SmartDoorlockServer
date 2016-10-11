@@ -181,42 +181,81 @@ function getRelativelyPrime(num){
 /**
  * 확장된 유클리드 알고리즘
  * http://bbolmin.tistory.com/45
+ * s*m + t*n = gcd(a, b) 일때
  * @method extendedEuclid
- * @param  {int}    a   r1
- * @param  {int}    b   r2
- * @return {int}        t1
+ * @param  {int}    a   r2
+ * @param  {int}    b   r3
+ * @return {int}        t3
  */
-function extendedEuclid(r1, r2){
-    if(r2 > r1){
-        let tmp = r1;
-        r1 = r2;
-        r2 = tmp;
+
+// s*m + t*n = gcd(a, b)
+
+// a  = b * q1 + r1
+// r1 = a + (-1) * q1 * b
+// r1 = s1 * a + t1 * b
+
+// s1 = 1
+// t1 = (-1) * q1
+
+// ---
+
+// b  = r1 * q2 + r2
+// r2 = b + (-1) * r1 * q2
+// r2 = b + (-1) * q2 * (s1 * a + t1 * b)
+// r2 = b + (-1) * q2 * s1 * a + (-1) * q2 * t1 * b
+// r2 = (-1) * q2 * s1 * a + ((-1) * q2 * t1 + 1) * b
+// r2 = s2 * a + t2 * b
+
+// s2 = (-1) * q2 * s1
+// t2 = (-1) * q2 * t1 + 1
+
+// ---
+
+// r1 = r2 * q3 + r3
+// r3 = r1 + (-1) * r2 * q3
+// r3 = (s1 * a + t1 * b) + (-1) * q3 * (s2 * a + t2 * b)
+// r3 = s1 * a + t1 * b + (-1) * q3 * s2 * a + (-1) * q3 * t2 * b
+// r3 = (s1 + (-1) * q3 * s2) * a + (t1 + (-1) * q3 * t2) * b
+// r3 = s2 * a + t2 * b
+
+// s3 = s1 + (-1) * q3 * s2
+// t3 = t1 + (-1) * q3 * t2
+// 
+
+function extendedEuclid(r2, r3){
+    if(r3 > r2){
+        let tmp = r2;
+        r2 = r3;
+        r3 = tmp;
     }
-    let s1  = 1;
+    let s3  = 1;
     let s2  = 0;
-    let t1  = 0;
+    let t3  = 0;
     let t2  = 1;
-    let tmp = r1;
+    let tmp = r2;
 
-    while(r2){
-        let q = Math.floor(r1 / r2);
-        let r = Math.floor(r1 % r2);
-        let s = s1 - q*s2;
-        let t = t1 - q*t2;
+    while(r3){
 
-        r1 = r2;
-        r2 = r;
-        s1 = s2;
-        s2 = s;
-        t1 = t2;
-        t2 = t;
+        let q1 = Math.floor(r2 / r3);
+        let r1 = Math.floor(r2 % r3);
+        let s1 = s3 - q1*s2;
+        let t1 = t3 - q1*t2;
+
+
+        r2 = r3;
+        r3 = r;
+        s3 = s2;
+        s2 = s1;
+        t3 = t2;
+        t2 = t1;
     }
 
-    if(t1 < 0){
-        t1 += tmp;
+    if(t3 < 0){
+        t3 += tmp;
     }
-    return t1;
+    return t3;
 }
+
 
 /**
  * number값을 n자리수만큼 빈곳을 0으로 채운 문자열 반환.
